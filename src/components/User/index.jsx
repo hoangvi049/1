@@ -1,5 +1,5 @@
-import React, { Fragment, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { Fragment, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { Table } from "antd";
 import { Input } from "antd";
 import { Button } from "antd";
@@ -8,34 +8,71 @@ import {
   EditOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { fetchUserList } from "../../redux/actions/UserAction";
+import { deleteUser } from "../../redux/actions/UserAction";
 import { NavLink } from "react-router-dom";
+import { history } from "../../App";
+import { adminService } from "../../services/baseService";
 
-function User() {
+export function User() {
+  const [searchText, setSearchText] = useState("");
+
+  const [danhSachUserSearch, setDanhSachUserSearch] = useState([]);
+  let [danhSachUser, setDanhSachUser] = useState([]);
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(fetchUserList);
-  }, []);
+    adminService
+      .layDanhSachNguoiDung()
+      .then((res) => {
+        setDanhSachUser(res.data.content);
+      })
+      .catch((err) => {
+        console.log(err?.response.data);
+      });
+  }, [dispatch]);
 
-  const { userList } = useSelector((state) => state.user);
-  console.log("userList", userList);
+  const handleChange = (event) => {
+    setSearchText(event.target.value);
+  };
+
+  useEffect(() => {
+    let results = danhSachUser.filter((user) => {
+      return user.taiKhoan.toLowerCase().includes(searchText.toLowerCase());
+    });
+    setDanhSachUserSearch(results);
+  }, [danhSachUser, searchText]);
+
   const columns = [
+    {
+      title: "Tài khoản",
+      dataIndex: "taiKhoan",
+      sortOder: "descend",
+      width: "20%",
+      sorter: {
+        compare: (a, b) => a.taiKhoan.length - b.taiKhoan.length,
+      },
+    },
+    {
+      title: "Mật khẩu",
+      dataIndex: "matKhau",
+      sortOder: "descend",
+      width: "10%",
+    },
     {
       title: "Họ Tên",
       dataIndex: "hoTen",
       sortOder: "descend",
-      width: "30%",
+      width: "20%",
     },
     {
       title: "Email",
       dataIndex: "email",
       defaultSortOrder: "descend",
-      width: "30%",
+      width: "15%",
     },
     {
       title: "Loại người dùng",
       dataIndex: "maLoaiNguoiDung",
-      width: "30%",
+      width: "20%",
 
       filters: [
         {
@@ -56,12 +93,27 @@ function User() {
       render: (text, user) => {
         return (
           <Fragment>
-            <NavLink className="bg-success text-white mr-2 p-2" to="/home">
+            <NavLink
+              key={1}
+              className="bg-success text-white mr-2 p-2"
+              to={`/user/edituser/${user.taiKhoan}`}
+            >
               <EditOutlined />
             </NavLink>
-            <NavLink className="bg-danger text-white p-2" to="/home">
+            <span
+              key={2}
+              className="bg-danger text-white p-2"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                if (
+                  window.confirm("Bạn có muốn xóa người dùng " + user.taiKhoan)
+                ) {
+                  dispatch(deleteUser(user.taiKhoan));
+                }
+              }}
+            >
               <DeleteOutlined />
-            </NavLink>
+            </span>
           </Fragment>
         );
       },
@@ -69,12 +121,16 @@ function User() {
     },
   ];
 
-  const data = userList;
+  const data = danhSachUserSearch;
 
   const { Search } = Input;
 
+  // const onSearch = (key) => {
+  //   dispatch(fetchUserList(key));
+  // };
+
   function onChange(pagination, filters, sorter, extra) {
-    console.log("params", pagination, filters, sorter, extra);
+    // console.log("params", pagination, filters, sorter, extra);
   }
 
   return (
@@ -85,10 +141,18 @@ function User() {
         type="primary"
         icon={<PlusSquareOutlined />}
         size="small"
+        onClick={() => history.push("/user/adduser")}
       >
         Add user
       </Button>
-      <Search placeholder="input search text" enterButton />
+      <Search
+        id="search"
+        name="search"
+        value={searchText}
+        onChange={handleChange}
+        placeholder="input search text"
+        enterButton
+      />
       <Table columns={columns} dataSource={data} onChange={onChange} />
     </div>
   );

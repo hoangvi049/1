@@ -7,10 +7,19 @@ export class AdminService {
       method: "GET",
       headers: {
         TokenCybersoft: tokenCybersoft,
-        Authorization: "Bearer " + localStorage.getItem(token),
       },
     });
   };
+
+  // timKiemNguoiDung = (key) => {
+  //   return axios({
+  //     url: `${domain}/QuanLyNguoiDung/TimKiemNguoiDung?MaNhom=${groupID}&tuKhoa=${key}`,
+  //     method: "GET",
+  //     headers: {
+  //       TokenCybersoft: tokenCybersoft,
+  //     },
+  //   });
+  // };
 
   themNguoiDung = (thongTinNguoiDung) => {
     return axios({
@@ -23,10 +32,22 @@ export class AdminService {
       },
     });
   };
+
+  layThongTinNguoiDung = (taiKhoan) => {
+    return axios({
+      url: `${domain}/QuanLyNguoiDung/LayThongTinNguoiDung?taiKhoan=${taiKhoan}`,
+      method: "POST",
+      headers: {
+        TokenCybersoft: tokenCybersoft,
+        Authorization: "Bearer " + localStorage.getItem(token),
+      },
+    });
+  };
+
   capNhatThongTinNguoiDung = (thongTinNguoiDung) => {
     return axios({
       url: `${domain}/QuanLyNguoiDung/CapNhatThongTinNguoiDung`,
-      method: "PUT",
+      method: "POST",
       data: thongTinNguoiDung,
       headers: {
         TokenCybersoft: tokenCybersoft,
@@ -41,6 +62,17 @@ export class AdminService {
       headers: {
         TokenCybersoft: tokenCybersoft,
         Authorization: "Bearer " + localStorage.getItem(token),
+      },
+    });
+  };
+
+  dangNhap = (thongTinDangNhap) => {
+    return axios({
+      url: `${domain}/QuanLyNguoiDung/DangNhap`,
+      method: "POST",
+      data: thongTinDangNhap,
+      headers: {
+        TokenCybersoft: tokenCybersoft,
       },
     });
   };
